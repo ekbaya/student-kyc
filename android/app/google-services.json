@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "184638683422",
+    "project_id": "student-kyc",
+    "storage_bucket": "student-kyc.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:184638683422:android:7775e4db11ba052ae7710f",
+        "android_client_info": {
+          "package_name": "com.example.students_kyc_app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "184638683422-hpuu8e2eade8mgehbkr8fst337o19fk3.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBPxz4qKJJ51OuK6jQByh9ZAOTYKgeHDPQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "184638683422-hpuu8e2eade8mgehbkr8fst337o19fk3.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
