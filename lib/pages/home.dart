@@ -1,208 +1,160 @@
-import 'package:students_kyc_app/constants/constants.dart';
-import 'package:students_kyc_app/locator.dart';
-import 'package:students_kyc_app/pages/sign-in.dart';
-import 'package:students_kyc_app/pages/sign-up.dart';
-import 'package:students_kyc_app/services/camera.service.dart';
-import 'package:students_kyc_app/services/ml_service.dart';
-import 'package:students_kyc_app/services/face_detector_service.dart';
-import 'package:flutter/material.dart';
-import 'package:url_launcher/url_launcher.dart';
+import 'dart:async';
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({Key? key}) : super(key: key);
+import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:students_kyc_app/models/user.model.dart';
+import 'package:students_kyc_app/pages/places.dart';
+
+import '../widgets/mainDrawer.dart';
+
+class HomePage extends StatefulWidget {
+  const HomePage({Key? key, required this.user, required this.imagepath})
+      : super(key: key);
+  final Account user;
+  final String imagepath;
+
   @override
-  // ignore: library_private_types_in_public_api
-  _MyHomePageState createState() => _MyHomePageState();
+  State<HomePage> createState() => _HomePageState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
-  final MLService _mlService = locator<MLService>();
-  final FaceDetectorService _mlKitService = locator<FaceDetectorService>();
-  final CameraService _cameraService = locator<CameraService>();
-  bool loading = false;
+class _HomePageState extends State<HomePage> {
+  GlobalKey<ScaffoldState> scaffoldKey = GlobalKey<ScaffoldState>();
+  Completer<GoogleMapController> controllerGoogleMap = Completer();
+  late GoogleMapController newGoogleMapController;
+  // ignore: unnecessary_const
+  static const CameraPosition kenya = const CameraPosition(
+    target: LatLng(1.286389, 36.817223),
+    zoom: 19,
+  );
 
+  late Position currentPosition;
+  var geoLocator = Geolocator();
+  Set<Marker> markersSet = {};
+  Set<Circle> circlesSet = {};
+  bool newNotification = false;
+  //   location pin
   @override
   void initState() {
     super.initState();
-    _initializeServices();
   }
-
-  _initializeServices() async {
-    setState(() => loading = true);
-    await _cameraService.initialize();
-    await _mlService.initialize();
-    _mlKitService.initialize();
-    setState(() => loading = false);
-  }
-
-  void _launchURL() async => await canLaunch(Constants.githubURL)
-      ? await launch(Constants.githubURL)
-      : throw 'Could not launch ${Constants.githubURL}';
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      drawer: mainDrawer(context, widget.user, widget.imagepath),
       appBar: AppBar(
-        leading: Container(),
-        elevation: 0,
-        backgroundColor: Colors.transparent,
-        actions: <Widget>[
-          Padding(
-            padding: const EdgeInsets.only(right: 20, top: 20),
-            child: PopupMenuButton<String>(
-              child: const Icon(
-                Icons.more_vert,
-                color: Colors.black,
-              ),
-              onSelected: (value) {
-                switch (value) {
-                  case 'Clear DB':
-                    break;
-                }
-              },
-              itemBuilder: (BuildContext context) {
-                return {'Clear DB'}.map((String choice) {
-                  return PopupMenuItem<String>(
-                    value: choice,
-                    child: Text(choice),
-                  );
-                }).toList();
-              },
-            ),
+        backgroundColor: Colors.white,
+        iconTheme: const IconThemeData(color: Colors.green),
+        title: GestureDetector(
+          onTap: () {},
+          child: const Text(
+            "WELCOME TO JKUAT",
+            style: TextStyle(color: Colors.black),
+          ),
+        ),
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(5),
+          child: Container(
+              alignment: Alignment.center,
+              width: MediaQuery.of(context).size.width,
+              height: 1.5,
+              color: Colors.green),
+        ),
+      ),
+      body: GoogleMap(
+        mapType: MapType.normal,
+        myLocationButtonEnabled: true,
+        initialCameraPosition: kenya,
+        myLocationEnabled: true,
+        zoomGesturesEnabled: true,
+        zoomControlsEnabled: false,
+        markers: markersSet,
+        circles: circlesSet,
+        onMapCreated: (GoogleMapController controler) {
+          controllerGoogleMap.complete(controler);
+          newGoogleMapController = controler;
+          setState(() {});
+          locatePosition();
+        },
+      ),
+      bottomNavigationBar: BottomNavigationBar(
+        type: BottomNavigationBarType.fixed,
+        items: const [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home),
+            label: 'Home',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.camera_outdoor),
+            label: 'Outdoor',
           ),
         ],
-      ),
-      body: !loading
-          ? SingleChildScrollView(
-              child: SafeArea(
-                child: Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: <Widget>[
-                      const Image(image: AssetImage('assets/logo.png')),
-                      SizedBox(
-                        width: MediaQuery.of(context).size.width * 0.8,
-                        child: Column(
-                          children: const [
-                            Text(
-                              "FACE RECOGNITION AUTHENTICATION",
-                              style: TextStyle(
-                                  fontSize: 25, fontWeight: FontWeight.bold),
-                              textAlign: TextAlign.center,
-                            ),
-                            SizedBox(
-                              height: 20,
-                            ),
-                            Text(
-                              "Student kyc is an artificail intelligent application that uses Machine Learning to implement authentication with facial recognition",
-                              style: TextStyle(
-                                fontSize: 16,
-                              ),
-                              textAlign: TextAlign.center,
-                            ),
-                          ],
-                        ),
-                      ),
-                      Column(
-                        children: [
-                          const SizedBox(
-                            height: 50,
-                          ),
-                          InkWell(
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (BuildContext context) =>
-                                      const SignIn(),
-                                ),
-                              );
-                            },
-                            child: Container(
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(10),
-                                color: Colors.black,
-                                boxShadow: <BoxShadow>[
-                                  BoxShadow(
-                                    color: Colors.blue.withOpacity(0.1),
-                                    blurRadius: 1,
-                                    offset: const Offset(0, 2),
-                                  ),
-                                ],
-                              ),
-                              alignment: Alignment.center,
-                              padding: const EdgeInsets.symmetric(
-                                  vertical: 14, horizontal: 16),
-                              width: MediaQuery.of(context).size.width * 0.8,
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: const [
-                                  Text(
-                                    'LOGIN',
-                                    style: TextStyle(color: Colors.white),
-                                  ),
-                                  SizedBox(
-                                    width: 10,
-                                  ),
-                                  Icon(Icons.login, color: Colors.white)
-                                ],
-                              ),
-                            ),
-                          ),
-                          const SizedBox(
-                            height: 20,
-                          ),
-                          InkWell(
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (BuildContext context) =>
-                                      const SignUp(),
-                                ),
-                              );
-                            },
-                            child: Container(
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(10),
-                                color: Colors.green,
-                                boxShadow: <BoxShadow>[
-                                  BoxShadow(
-                                    color: Colors.blue.withOpacity(0.1),
-                                    blurRadius: 1,
-                                    offset: const Offset(0, 2),
-                                  ),
-                                ],
-                              ),
-                              alignment: Alignment.center,
-                              padding: const EdgeInsets.symmetric(
-                                  vertical: 14, horizontal: 16),
-                              width: MediaQuery.of(context).size.width * 0.8,
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: const [
-                                  Text(
-                                    'SIGN UP',
-                                    style: TextStyle(color: Colors.white),
-                                  ),
-                                  SizedBox(
-                                    width: 10,
-                                  ),
-                                  Icon(Icons.person_add, color: Colors.white)
-                                ],
-                              ),
-                            ),
-                          ),
-                        ],
-                      )
-                    ],
-                  ),
+        onTap: (index) {
+          if (index == 1) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const PlacesPage(),
+              ),
+            );
+          }
+          if (index == 2) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => HomePage(
+                  user: widget.user,
+                  imagepath: widget.imagepath,
                 ),
               ),
-            )
-          : const Center(
-              child: CircularProgressIndicator(),
-            ),
+            );
+          }
+        },
+      ),
     );
+  }
+
+  void locatePosition() async {
+    Map<Permission, PermissionStatus> statuses = await [
+      Permission.location,
+    ].request();
+    if (kDebugMode) {
+      print(statuses[Permission.location]);
+    }
+    if (statuses[Permission.location]!.isDenied) {
+      requestPermission(Permission.location);
+    } else {
+      Position position = await Geolocator.getCurrentPosition(
+          desiredAccuracy: LocationAccuracy.high);
+      currentPosition = position;
+
+      setState(() {
+        markersSet.add(
+          Marker(
+              markerId: const MarkerId("user"),
+              position: LatLng(position.latitude, position.longitude),
+              anchor: const Offset(0.5, 0.5),
+              draggable: false,
+              flat: true,
+              infoWindow: const InfoWindow(
+                  title: "Home Address", snippet: "Current Location"),
+              icon: BitmapDescriptor.defaultMarkerWithHue(
+                  BitmapDescriptor.hueGreen)),
+        );
+      });
+
+      LatLng latLngPosition = LatLng(position.latitude, position.longitude);
+      CameraPosition cameraPosition =
+          CameraPosition(target: latLngPosition, zoom: 19);
+      newGoogleMapController
+          .animateCamera(CameraUpdate.newCameraPosition(cameraPosition));
+    }
+  }
+
+  Future<void> requestPermission(Permission permission) async {
+    await permission.request();
   }
 }

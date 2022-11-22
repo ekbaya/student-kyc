@@ -3,7 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:students_kyc_app/locator.dart';
 import 'package:students_kyc_app/models/user.model.dart';
 import 'package:students_kyc_app/pages/home.dart';
-import 'package:students_kyc_app/pages/profile.dart';
+import 'package:students_kyc_app/pages/welcome.dart';
 import 'package:students_kyc_app/widgets/app_button.dart';
 import 'package:students_kyc_app/services/camera.service.dart';
 import 'package:students_kyc_app/services/ml_service.dart';
@@ -75,7 +75,7 @@ class _AuthActionButtonState extends State<AuthActionButton> {
     Navigator.push(
         context,
         MaterialPageRoute(
-            builder: (BuildContext context) => const MyHomePage()));
+            builder: (BuildContext context) => const WelcomePage()));
   }
 
   Future _signIn(context) async {
@@ -84,9 +84,9 @@ class _AuthActionButtonState extends State<AuthActionButton> {
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (BuildContext context) => Profile(
-            predictedUser!.name,
-            imagePath: _cameraService.imagePath!,
+          builder: (BuildContext context) => HomePage(
+            user: predictedUser!,
+            imagepath: _cameraService.imagePath!,
           ),
         ),
       );

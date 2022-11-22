@@ -1,5 +1,5 @@
 import 'package:students_kyc_app/locator.dart';
-import 'package:students_kyc_app/pages/home.dart';
+import 'package:students_kyc_app/pages/welcome.dart';
 import 'package:flutter/material.dart';
 // ignore: depend_on_referenced_packages
 import 'package:firebase_core/firebase_core.dart';
@@ -26,7 +26,7 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.blue,
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
-      home: const MyHomePage(),
+      home: const WelcomePage(),
     );
   }
 }

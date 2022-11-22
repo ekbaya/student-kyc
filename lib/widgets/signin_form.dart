@@ -1,7 +1,7 @@
 import 'package:crypt/crypt.dart';
 import 'package:students_kyc_app/locator.dart';
 import 'package:students_kyc_app/models/user.model.dart';
-import 'package:students_kyc_app/pages/profile.dart';
+import 'package:students_kyc_app/pages/home.dart';
 import 'package:students_kyc_app/widgets/app_button.dart';
 import 'package:students_kyc_app/widgets/app_text_field.dart';
 import 'package:students_kyc_app/services/camera.service.dart';
@@ -19,9 +19,9 @@ class SignInSheet extends StatelessWidget {
       Navigator.push(
           context,
           MaterialPageRoute(
-              builder: (BuildContext context) => Profile(
-                    user.name,
-                    imagePath: _cameraService.imagePath!,
+              builder: (BuildContext context) => HomePage(
+                    user: user,
+                    imagepath: _cameraService.imagePath!,
                   )));
     } else {
       showDialog(
