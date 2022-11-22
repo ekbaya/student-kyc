@@ -45,6 +45,9 @@ dependencies:
   get_it: ^7.2.0
   font_awesome_flutter: ^10.2.1
   url_launcher: ^6.1.6
+  firebase_core: ^2.3.0
+  cloud_firestore: ^4.1.0
+  crypt: ^4.2.1
 
 dev_dependencies:
   flutter_test:

@@ -32,7 +32,7 @@ class Profile extends StatelessWidget {
                   height: 50,
                 ),
                 Text(
-                  'Hi ' + username + '!',
+                  'Hi $username!',
                   style: const TextStyle(
                       fontSize: 22, fontWeight: FontWeight.w600),
                 ),

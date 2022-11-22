@@ -2,6 +2,7 @@ import 'dart:io';
 import 'dart:math';
 import 'package:camera/camera.dart';
 import 'package:flutter/foundation.dart';
+import 'package:students_kyc_app/db/users_repository.dart';
 import 'package:students_kyc_app/models/user.model.dart';
 import 'package:students_kyc_app/db/databse_helper.dart';
 import 'package:students_kyc_app/services/image_converter.dart';
@@ -109,9 +110,12 @@ class MLService {
   }
 
   Future<User?> _searchResult(List predictedData) async {
-    DatabaseHelper _dbHelper = DatabaseHelper.instance;
+    //Firestore Here
+    // DatabaseHelper _dbHelper = DatabaseHelper.instance;
 
-    List<User> users = await _dbHelper.queryAllUsers();
+    // List<User> users = await _dbHelper.queryAllUsers();
+
+    List<User> users = await getUsers();
     double minDist = 999;
     double currDist = 0.0;
     User? predictedResult;

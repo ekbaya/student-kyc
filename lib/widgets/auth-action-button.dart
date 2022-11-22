@@ -1,6 +1,6 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 import 'package:students_kyc_app/locator.dart';
-import 'package:students_kyc_app/db/databse_helper.dart';
 import 'package:students_kyc_app/models/user.model.dart';
 import 'package:students_kyc_app/pages/home.dart';
 import 'package:students_kyc_app/pages/profile.dart';
@@ -9,9 +9,11 @@ import 'package:students_kyc_app/services/camera.service.dart';
 import 'package:students_kyc_app/services/ml_service.dart';
 import 'package:flutter/material.dart';
 import 'app_text_field.dart';
+import 'package:crypt/crypt.dart';
 
 class AuthActionButton extends StatefulWidget {
-  AuthActionButton(
+  // ignore: use_key_in_widget_constructors
+  const AuthActionButton(
       {Key? key,
       required this.onPressed,
       required this.isLogin,
@@ -42,7 +44,7 @@ class _AuthActionButtonState extends State<AuthActionButton> {
   User? predictedUser;
 
   Future _signUp(context) async {
-    DatabaseHelper databaseHelper = DatabaseHelper.instance;
+    //DatabaseHelper databaseHelper = DatabaseHelper.instance;
     List predictedData = _mlService.predictedData;
     String name = _nameTextEditingController.text;
     String password = _passwordTextEditingController.text;
@@ -50,12 +52,16 @@ class _AuthActionButtonState extends State<AuthActionButton> {
     String registration = _registrationNumberTextEdittingController.text;
     User userToSave = User(
       name: name,
-      password: password,
+      password: Crypt.sha256(password).toString(),
       email: email,
       registration: registration,
       modelData: predictedData,
     );
-    await databaseHelper.insert(userToSave);
+    //Register User to Firebase Firestore
+
+    FirebaseFirestore db = FirebaseFirestore.instance;
+    db.collection("users").add(userToSave.toMap());
+    //await databaseHelper.insert(userToSave);
     _mlService.setPredictedData([]);
     Navigator.push(
         context,
@@ -65,14 +71,16 @@ class _AuthActionButtonState extends State<AuthActionButton> {
 
   Future _signIn(context) async {
     String password = _passwordTextEditingController.text;
-    if (predictedUser!.password == password) {
+    if (Crypt(predictedUser!.password).match(password)) {
       Navigator.push(
-          context,
-          MaterialPageRoute(
-              builder: (BuildContext context) => Profile(
-                    predictedUser!.name,
-                    imagePath: _cameraService.imagePath!,
-                  )));
+        context,
+        MaterialPageRoute(
+          builder: (BuildContext context) => Profile(
+            predictedUser!.name,
+            imagePath: _cameraService.imagePath!,
+          ),
+        ),
+      );
     } else {
       showDialog(
         context: context,
