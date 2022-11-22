@@ -1,11 +1,16 @@
 import 'package:students_kyc_app/locator.dart';
 import 'package:students_kyc_app/pages/home.dart';
 import 'package:flutter/material.dart';
+// ignore: depend_on_referenced_packages
 import 'package:firebase_core/firebase_core.dart';
+
+import 'firebase_options.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
   setupServices();
   runApp(const MyApp());
 }

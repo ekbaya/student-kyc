@@ -10,6 +10,7 @@ import 'package:students_kyc_app/services/ml_service.dart';
 import 'package:flutter/material.dart';
 import 'app_text_field.dart';
 import 'package:crypt/crypt.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class AuthActionButton extends StatefulWidget {
   // ignore: use_key_in_widget_constructors
@@ -41,16 +42,15 @@ class _AuthActionButtonState extends State<AuthActionButton> {
   final TextEditingController _registrationNumberTextEdittingController =
       TextEditingController(text: '');
 
-  User? predictedUser;
+  Account? predictedUser;
 
   Future _signUp(context) async {
-    //DatabaseHelper databaseHelper = DatabaseHelper.instance;
     List predictedData = _mlService.predictedData;
     String name = _nameTextEditingController.text;
     String password = _passwordTextEditingController.text;
     String email = _emailTextEdittingController.text;
     String registration = _registrationNumberTextEdittingController.text;
-    User userToSave = User(
+    Account userToSave = Account(
       name: name,
       password: Crypt.sha256(password).toString(),
       email: email,
@@ -58,10 +58,19 @@ class _AuthActionButtonState extends State<AuthActionButton> {
       modelData: predictedData,
     );
     //Register User to Firebase Firestore
+    FirebaseAuth auth = FirebaseAuth.instance;
+    UserCredential userCredential = await auth.createUserWithEmailAndPassword(
+        email: userToSave.email, password: password);
 
     FirebaseFirestore db = FirebaseFirestore.instance;
-    db.collection("users").add(userToSave.toMap());
-    //await databaseHelper.insert(userToSave);
+    db.settings = const Settings(
+      persistenceEnabled: true,
+      cacheSizeBytes: Settings.CACHE_SIZE_UNLIMITED,
+    );
+    await db
+        .collection("users")
+        .doc(userCredential.user!.uid)
+        .set(userToSave.toMap());
     _mlService.setPredictedData([]);
     Navigator.push(
         context,
@@ -93,8 +102,8 @@ class _AuthActionButtonState extends State<AuthActionButton> {
     }
   }
 
-  Future<User?> _predictUser() async {
-    User? userAndPass = await _mlService.predict();
+  Future<Account?> _predictUser() async {
+    Account? userAndPass = await _mlService.predict();
     return userAndPass;
   }
 

@@ -1,13 +1,11 @@
 import 'package:students_kyc_app/constants/constants.dart';
 import 'package:students_kyc_app/locator.dart';
-import 'package:students_kyc_app/db/databse_helper.dart';
 import 'package:students_kyc_app/pages/sign-in.dart';
 import 'package:students_kyc_app/pages/sign-up.dart';
 import 'package:students_kyc_app/services/camera.service.dart';
 import 'package:students_kyc_app/services/ml_service.dart';
 import 'package:students_kyc_app/services/face_detector_service.dart';
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class MyHomePage extends StatefulWidget {
@@ -59,8 +57,6 @@ class _MyHomePageState extends State<MyHomePage> {
               onSelected: (value) {
                 switch (value) {
                   case 'Clear DB':
-                    DatabaseHelper _dataBaseHelper = DatabaseHelper.instance;
-                    _dataBaseHelper.deleteAll();
                     break;
                 }
               },

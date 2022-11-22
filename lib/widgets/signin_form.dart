@@ -1,3 +1,4 @@
+import 'package:crypt/crypt.dart';
 import 'package:students_kyc_app/locator.dart';
 import 'package:students_kyc_app/models/user.model.dart';
 import 'package:students_kyc_app/pages/profile.dart';
@@ -8,13 +9,13 @@ import 'package:flutter/material.dart';
 
 class SignInSheet extends StatelessWidget {
   SignInSheet({Key? key, required this.user}) : super(key: key);
-  final User user;
+  final Account user;
 
   final _passwordController = TextEditingController();
   final _cameraService = locator<CameraService>();
 
   Future _signIn(context, user) async {
-    if (user.password == _passwordController.text) {
+    if (Crypt(user.password).match(_passwordController.text)) {
       Navigator.push(
           context,
           MaterialPageRoute(
