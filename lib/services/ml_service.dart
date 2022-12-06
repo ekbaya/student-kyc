@@ -2,8 +2,8 @@ import 'dart:io';
 import 'dart:math';
 import 'package:camera/camera.dart';
 import 'package:flutter/foundation.dart';
-import 'package:students_kyc_app/db/users_repository.dart';
 import 'package:students_kyc_app/models/user.model.dart';
+import 'package:students_kyc_app/db/databse_helper.dart';
 import 'package:students_kyc_app/services/image_converter.dart';
 import 'package:google_ml_kit/google_ml_kit.dart';
 import 'package:tflite_flutter/tflite_flutter.dart';
@@ -64,7 +64,7 @@ class MLService {
     _predictedData = List.from(output);
   }
 
-  Future<Account?> predict() async {
+  Future<User?> predict() async {
     return _searchResult(_predictedData);
   }
 
@@ -108,20 +108,21 @@ class MLService {
     return convertedBytes.buffer.asFloat32List();
   }
 
-  Future<Account?> _searchResult(List predictedData) async {
-    List<Account> users = await getUsers();
+  Future<User?> _searchResult(List predictedData) async {
+    DatabaseHelper _dbHelper = DatabaseHelper.instance;
+
+    List<User> users = await _dbHelper.queryAllUsers();
     double minDist = 999;
     double currDist = 0.0;
-    Account? predictedResult;
+    User? predictedResult;
 
-    for (Account u in users) {
+    for (User u in users) {
       currDist = _euclideanDistance(u.modelData, predictedData);
       if (currDist <= threshold && currDist < minDist) {
         minDist = currDist;
         predictedResult = u;
       }
     }
-
     return predictedResult;
   }
 

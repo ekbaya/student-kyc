@@ -1,16 +1,16 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'dart:math';
+
 import 'package:flutter/foundation.dart';
+import 'package:students_kyc_app/db/databse_helper.dart';
 import 'package:students_kyc_app/locator.dart';
 import 'package:students_kyc_app/models/user.model.dart';
 import 'package:students_kyc_app/pages/home.dart';
-import 'package:students_kyc_app/pages/welcome.dart';
+import 'package:students_kyc_app/pages/profile.dart';
 import 'package:students_kyc_app/widgets/app_button.dart';
 import 'package:students_kyc_app/services/camera.service.dart';
 import 'package:students_kyc_app/services/ml_service.dart';
 import 'package:flutter/material.dart';
 import 'app_text_field.dart';
-import 'package:crypt/crypt.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 
 class AuthActionButton extends StatefulWidget {
   // ignore: use_key_in_widget_constructors
@@ -42,54 +42,45 @@ class _AuthActionButtonState extends State<AuthActionButton> {
   final TextEditingController _registrationNumberTextEdittingController =
       TextEditingController(text: '');
 
-  Account? predictedUser;
+  final List<String> fees = ["-26,669.60", "0", "20,000", "1000", "-2500"];
+
+  User? predictedUser;
 
   Future _signUp(context) async {
+    DatabaseHelper databaseHelper = DatabaseHelper.instance;
+    Random random = Random();
     List predictedData = _mlService.predictedData;
     String name = _nameTextEditingController.text;
     String password = _passwordTextEditingController.text;
     String email = _emailTextEdittingController.text;
     String registration = _registrationNumberTextEdittingController.text;
-    Account userToSave = Account(
+    User userToSave = User(
       name: name,
-      password: Crypt.sha256(password).toString(),
+      password: password,
       email: email,
       registration: registration,
+      feebalance: fees[random.nextInt(5)], //from 0 to 4
       modelData: predictedData,
     );
-    //Register User to Firebase Firestore
-    FirebaseAuth auth = FirebaseAuth.instance;
-    UserCredential userCredential = await auth.createUserWithEmailAndPassword(
-        email: userToSave.email, password: password);
-
-    FirebaseFirestore db = FirebaseFirestore.instance;
-    db.settings = const Settings(
-      persistenceEnabled: true,
-      cacheSizeBytes: Settings.CACHE_SIZE_UNLIMITED,
-    );
-    await db
-        .collection("users")
-        .doc(userCredential.user!.uid)
-        .set(userToSave.toMap());
+    await databaseHelper.insert(userToSave);
     _mlService.setPredictedData([]);
     Navigator.push(
         context,
         MaterialPageRoute(
-            builder: (BuildContext context) => const WelcomePage()));
+            builder: (BuildContext context) => const MyHomePage()));
   }
 
   Future _signIn(context) async {
     String password = _passwordTextEditingController.text;
-    if (Crypt(predictedUser!.password).match(password)) {
+    if (predictedUser!.password == password) {
       Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (BuildContext context) => HomePage(
-            user: predictedUser!,
-            imagepath: _cameraService.imagePath!,
-          ),
-        ),
-      );
+          context,
+          MaterialPageRoute(
+              builder: (BuildContext context) => Profile(
+                    predictedUser!.name,
+                    imagePath: _cameraService.imagePath!,
+                    feebalance: predictedUser!.feebalance,
+                  )));
     } else {
       showDialog(
         context: context,
@@ -102,8 +93,8 @@ class _AuthActionButtonState extends State<AuthActionButton> {
     }
   }
 
-  Future<Account?> _predictUser() async {
-    Account? userAndPass = await _mlService.predict();
+  Future<User?> _predictUser() async {
+    User? userAndPass = await _mlService.predict();
     return userAndPass;
   }
 

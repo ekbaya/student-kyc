@@ -95,7 +95,7 @@ class SignInState extends State<SignIn> {
   Future<void> onTap() async {
     await takePicture();
     if (_faceDetectorService.faceDetected) {
-      Account? user = await _mlService.predict();
+      User? user = await _mlService.predict();
       var bottomSheetController = scaffoldKey.currentState!
           .showBottomSheet((context) => signInSheet(user: user!));
       bottomSheetController.closed.whenComplete(_reload);
@@ -129,7 +129,7 @@ class SignInState extends State<SignIn> {
     );
   }
 
-  signInSheet({@required Account? user}) => user == null
+  signInSheet({@required User? user}) => user == null
       ? Container(
           width: MediaQuery.of(context).size.width,
           padding: const EdgeInsets.all(20),

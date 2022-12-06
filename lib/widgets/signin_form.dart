@@ -1,7 +1,6 @@
-import 'package:crypt/crypt.dart';
 import 'package:students_kyc_app/locator.dart';
 import 'package:students_kyc_app/models/user.model.dart';
-import 'package:students_kyc_app/pages/home.dart';
+import 'package:students_kyc_app/pages/profile.dart';
 import 'package:students_kyc_app/widgets/app_button.dart';
 import 'package:students_kyc_app/widgets/app_text_field.dart';
 import 'package:students_kyc_app/services/camera.service.dart';
@@ -9,19 +8,20 @@ import 'package:flutter/material.dart';
 
 class SignInSheet extends StatelessWidget {
   SignInSheet({Key? key, required this.user}) : super(key: key);
-  final Account user;
+  final User user;
 
   final _passwordController = TextEditingController();
   final _cameraService = locator<CameraService>();
 
-  Future _signIn(context, user) async {
-    if (Crypt(user.password).match(_passwordController.text)) {
+  Future _signIn(context, User user) async {
+    if (user.password == _passwordController.text) {
       Navigator.push(
           context,
           MaterialPageRoute(
-              builder: (BuildContext context) => HomePage(
-                    user: user,
-                    imagepath: _cameraService.imagePath!,
+              builder: (BuildContext context) => Profile(
+                    user.name,
+                    imagePath: _cameraService.imagePath!,
+                    feebalance: user.feebalance,
                   )));
     } else {
       showDialog(
