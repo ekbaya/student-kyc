@@ -8,7 +8,7 @@ import 'package:flutter/material.dart';
 
 class SignInSheet extends StatelessWidget {
   SignInSheet({Key? key, required this.user}) : super(key: key);
-  final User user;
+  final User? user;
 
   final _passwordController = TextEditingController();
   final _cameraService = locator<CameraService>();
@@ -43,33 +43,44 @@ class SignInSheet extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(
-            'Welcome back, ${user.name}.',
-            style: const TextStyle(fontSize: 20),
-          ),
-          Column(
-            children: [
-              const SizedBox(height: 10),
-              AppTextField(
-                controller: _passwordController,
-                labelText: "Password",
-                isPassword: true,
-              ),
-              const SizedBox(height: 10),
-              const Divider(),
-              const SizedBox(height: 10),
-              AppButton(
-                text: 'LOGIN',
-                onPressed: () async {
-                  _signIn(context, user);
-                },
-                icon: const Icon(
-                  Icons.login,
-                  color: Colors.white,
-                ),
-              )
-            ],
-          ),
+          user != null
+              ? Column(
+                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'Welcome back, ${user!.name}.',
+                      style: const TextStyle(fontSize: 20),
+                    ),
+                    Column(
+                      children: [
+                        const SizedBox(height: 10),
+                        AppTextField(
+                          controller: _passwordController,
+                          labelText: "Password",
+                          isPassword: true,
+                        ),
+                        const SizedBox(height: 10),
+                        const Divider(),
+                        const SizedBox(height: 10),
+                        AppButton(
+                          text: 'LOGIN',
+                          onPressed: () async {
+                            _signIn(context, user!);
+                          },
+                          icon: const Icon(
+                            Icons.login,
+                            color: Colors.white,
+                          ),
+                        )
+                      ],
+                    ),
+                  ],
+                )
+              : const Text(
+                  'User not found 😞',
+                  style: TextStyle(fontSize: 20),
+                )
         ],
       ),
     );
